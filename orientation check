@@ -1,0 +1,45 @@
+#include "CurieIMU.h"
+#include "CurieTimerOne.h"
+
+float ax,ay,az;
+
+int orientation_before = -1;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+
+  Serial.print("Welcome to the orientation program");
+  
+  CurieIMU.begin();
+  CurieIMU.setAccelerometerRange(2);
+  
+  CurieTimerOne.start(10000, &accelerometer_reader);
+
+ }
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  //get readings from accelerometer to see what orientation its at
+  if(ax <-0.8 && ay < 0.2&& ay> -0.2 && orientation_before) {
+   Serial.println("The orientation of the Arduino is: Portrait 1");
+   orientation_before = 0;
+  }
+  else if(ax > 0.8 && ay < 0.2&& ay> -0.2 &&(orientation_before!=1)){
+    Serial.println("The orientation of the Arduino is: Portrait 2");
+    orientation_before = 1;
+  }
+  else if(ay > 0.8 && ax < 0.2&& ax> -0.2 &&(orientation_before!=2)){
+    Serial.println("The orientation of the Arduino is: Landscape 1");
+    orientation_before = 2;
+  }
+  else if(ay< -0.8 && ax < 0.2&& ax> -0.2 &&(orientation_before!=3)){
+    Serial.println("The orientation of the Arduino is: Landscape 2");
+    orientation_before = 3;
+  }    
+}
+
+void accelerometer_reader(){
+    CurieIMU.readAccelerometerScaled(ax, ay, az);//read
+ 
+}
