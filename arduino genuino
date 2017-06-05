@@ -1,0 +1,88 @@
+#include "CurieIMU.h"
+#include "CurieTimerOne.h"
+
+float ax,ay,az;
+
+int orientation_before = -1;
+
+int pos = 500;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(74880);
+  while(!Serial);
+
+  CurieIMU.begin();
+  CurieIMU.attachInterrupt(eventCallback);
+  CurieIMU.setAccelerometerRange(2);
+
+  //shock detection
+  CurieIMU.setDetectionThreshold(CURIE_IMU_SHOCK, 1500);
+  CurieIMU.setDetectionDuration(CURIE_IMU_SHOCK, 75);
+  CurieTimerOne.start(10000, &accelerometer_reader);
+
+ }
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  //get readings from accelerometer to see what orientation its at
+  /*if(ax <-0.8 && ay < 0.2&& ay> -0.2 && orientation_before) {
+   Serial.println("The orientation of the Arduino is: Portrait 1");
+   orientation_before = 0;
+  }
+  else if(ax > 0.8 && ay < 0.2&& ay> -0.2 &&(orientation_before!=1)){
+    Serial.println("The orientation of the Arduino is: Portrait 2");
+    orientation_before = 1;
+  }
+  else if(ay > 0.8 && ax < 0.2&& ax> -0.2 &&(orientation_before!=2)){
+    Serial.println("Left");
+    orientation_before = 2;
+  }*/
+
+  //with usb connection pointing FORWARD
+  if(ay< -0.8 && ax < 0.2&& ax> -0.2){
+    //Serial.println("Neutral");
+    orientation_before = 0;
+    
+  }    
+
+  else if (az>0.7 && pos>5){
+    //Serial.println("Left");
+    orientation_before = 1;
+    pos -= 1;
+  }
+
+  else if(az<-0.7 && pos <725){
+    //Serial.println("Right");
+    orientation_before = 2;
+    pos += 1;
+  }
+
+  Serial.print(micros());
+  Serial.print("\t");
+  Serial.println(pos);
+  delayMicroseconds(10000);
+}
+
+
+void accelerometer_reader(){
+    CurieIMU.readAccelerometerScaled(ax, ay, az);//read
+}
+
+static void eventCallback(void)
+{
+  if (CurieIMU.getInterruptStatus(CURIE_IMU_SHOCK)) {
+    if (CurieIMU.shockDetected(X_AXIS, POSITIVE))
+      Serial.println("Negative X"); //replace print statements with desired output position
+    if (CurieIMU.shockDetected(X_AXIS, NEGATIVE))
+      Serial.println("Positive X");
+    if (CurieIMU.shockDetected(Y_AXIS, POSITIVE))
+      Serial.println("Negative Y");
+    if (CurieIMU.shockDetected(Y_AXIS, NEGATIVE))
+      Serial.println("Positive Y");
+    if (CurieIMU.shockDetected(Z_AXIS, POSITIVE))
+      Serial.println("Negative Z");
+    if (CurieIMU.shockDetected(Z_AXIS, NEGATIVE))
+      Serial.println("Positive Z");
+  }
+}
