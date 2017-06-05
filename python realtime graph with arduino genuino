@@ -1,0 +1,46 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jun 03 22:41:12 2017
+
+@author: Daniel
+"""
+
+import serial
+import matplotlib.pyplot as plt
+
+ser = serial.Serial('COM3',74880)
+print 'Serial is opened'
+
+position = []
+time = []
+plt.ion
+
+handle = plt.plot(time, position)
+
+plt.ylim(5,725)
+plt.xlabel("Time")
+plt.ylabel("Position")
+
+count = 0
+
+while 1:
+    try:
+        value = ser.readline().split('\t')
+        position.append(int(value[1]))
+        time.append(int(value[0]))
+        
+        if ((len(position))>400):
+            del position[0]
+            del time[0]
+            
+        if (count%10 == 0):
+            handle[0].set_ydata(position)
+            handle[0].set_xdata(time)
+            plt.xlim(time[0],time[-1])
+            plt.pause(0.001)
+        
+        
+    except KeyboardInterrupt:
+        ser.close()
+    
+    count = count + 1
