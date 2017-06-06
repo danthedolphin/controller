@@ -1,0 +1,95 @@
+#include "CurieIMU.h"
+#include "CurieTimerOne.h"
+
+float ax,ay,az, gx,gy,gz;
+
+int orientation_before = -1;
+
+int pos = 500;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  while(!Serial);
+
+  CurieIMU.begin();
+  CurieIMU.attachInterrupt(earthshock);
+  CurieIMU.setAccelerometerRange(4);
+  CurieIMU.setGyroRange(500);
+  // Reduce threshold to allow detection of weaker taps (>= 750mg)
+  CurieIMU.setDetectionThreshold(CURIE_IMU_TAP, 525); // (750mg)
+
+  // Enable Double-Tap detection
+  CurieIMU.interrupts(CURIE_IMU_TAP);
+  
+  CurieTimerOne.start(10000, &accelerometer_reader);
+
+ }
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  
+  //with usb connection pointing FORWARD
+
+  if (az>0.4 && pos>5){
+    //Serial.println("Left");
+    orientation_before = 1;
+    pos -= 10;
+  }
+
+  else if(az<-0.4 && pos <745){
+    //Serial.println("Right");
+    orientation_before = 0;
+    pos += 10;
+  }
+
+  if (gx < -475) pos = 744;
+  else if (gx>475) pos = 6;
+  
+  while(pos>=745) pos -= 1;
+  while(pos<=5) pos+=1;
+  
+  Serial.print(micros());
+  Serial.print("\t");
+  Serial.print(pos);
+  Serial.print("\t");
+  delay(100);
+  Serial.println(gx);
+  delay(50);
+}
+
+
+void accelerometer_reader(){
+    CurieIMU.readAccelerometerScaled(ax, ay, az);//read
+    CurieIMU.readGyroScaled(gx, gy, gz);
+}
+static void earthshock()
+{
+  if (CurieIMU.getInterruptStatus(CURIE_IMU_TAP)) {
+    if (CurieIMU.tapDetected(X_AXIS, NEGATIVE)){
+      if(orientation_before)pos -= 100;
+      else pos += 100;
+    }
+    if (CurieIMU.tapDetected(X_AXIS, POSITIVE)){
+      if(orientation_before)pos -= 100;
+      else pos += 100;
+    }
+    if (CurieIMU.tapDetected(Y_AXIS, NEGATIVE)){
+      if(orientation_before)pos -= 100;
+      else pos += 100;
+    }
+    if (CurieIMU.tapDetected(Y_AXIS, POSITIVE)){
+      if(orientation_before)pos -= 100;
+      else pos += 100;
+    }
+    if (CurieIMU.tapDetected(Z_AXIS, NEGATIVE)){
+      if(orientation_before)pos -= 100;
+      else pos += 100;
+    }
+    if (CurieIMU.tapDetected(Z_AXIS, POSITIVE)){
+      if(orientation_before)pos -= 100;
+      else pos += 100;
+    }
+   
+  }
+}
