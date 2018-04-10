@@ -152,7 +152,7 @@ float boxcarFilterSample(float sample) {
 }
 
 
-static void earthshock()
+static void earthshocku()
 {
   if (CurieIMU.getInterruptStatus(CURIE_IMU_TAP)) {
     if (CurieIMU.tapDetected(X_AXIS, NEGATIVE)){
