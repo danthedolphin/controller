@@ -16,14 +16,14 @@ void setup() {
   CurieIMU.begin();
   CurieIMU.setAccelerometerRange(4);
   CurieIMU.setGyroRange(500);
-  
+
   CurieTimerOne.start(10000, &accelerometer_reader);
 
  }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  
+
   //with usb connection pointing FORWARD
 
   if (az>0.4 && pos>5){
@@ -40,12 +40,12 @@ void loop() {
 
   if (gx < -475) pos = 744;
   else if (gx>475) pos = 6;
-  
+
   while(pos>=745) pos -= 1;
   while(pos<=5) pos+=1;
 
   if ((emgbox>0.099) && (emgboxprev>0.099)) shoot = 1 - shoot;
-  
+
   Serial.println(pos);
   delay(100);
   Serial.println(shoot);
@@ -56,11 +56,11 @@ void loop() {
 void accelerometer_reader(){
     CurieIMU.readAccelerometerScaled(ax, ay, az);//read
     CurieIMU.readGyroScaled(gx, gy, gz);
-    
+
     emgboxprev = emgbox;
     emg = analogRead(A0);
 
-    emgscaled = (float(emg) * 3.3 / 1023 - 1.5) / 3.6; // dividing by 3600 gets V; dividing by 3.6 gets mV
+    emgscaled = (float(emg) * 3.3 / 1023 - 1.5) / 3.6; // dividing by 3600 gets volts; dividing by 3.6 gets mV
     emgHPF = thirdorderHPF(emgscaled);
     emgLPF = thirdorderLPF(emgHPF);
     emgrect = abs(emgLPF);
@@ -179,6 +179,6 @@ static void earthshock()
       if(orientation_before)pos -= 100;
       else pos += 100;
     }
-   
+
   }
 }
